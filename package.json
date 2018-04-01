@@ -1,0 +1,19 @@
+{
+  "name": "my_demo",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "react": "^16.3.0",
+    "react-dom": "^16.3.0",
+    "react-router": "^4.2.0",
+    "react-router-dom": "^4.2.2"
+  },
+  "scripts": {
+    "server": "cd server && json-server db.json -w -p 3000",
+    "dev": "roadhog server"
+  },
+  "devDependencies": {
+    "json-server": "^0.12.1"
+  }
+}

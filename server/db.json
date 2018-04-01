@@ -1,0 +1,72 @@
+{
+  "user": [
+    {
+      "id": 10000,
+      "name": "一韬",
+      "age": 25,
+      "gender": "male"
+    },
+    {
+      "id": 10001,
+      "name": "张三",
+      "age": 30,
+      "gender": "female"
+    },
+    {
+      "username": "zyz",
+      "age": "34",
+      "gender": "male",
+      "id": 10002
+    },
+    {
+      "name": "baba",
+      "age": "11",
+      "gender": "male",
+      "id": 10003
+    },
+    {
+      "name": "韩梅梅",
+      "age": "30",
+      "gender": "female",
+      "id": 10004
+    },
+    {
+      "name": "百度",
+      "age": 15,
+      "gender": "male",
+      "id": 10005
+    },
+    {
+      "name": "1111",
+      "age": "11",
+      "gender": "male",
+      "id": 10007
+    },
+    {
+      "name": "admin",
+      "age": "13",
+      "gender": "male",
+      "id": 10008
+    },
+    {
+      "name": "fff",
+      "age": "1",
+      "gender": "male",
+      "id": 10009
+    }
+  ],
+  "book": [
+    {
+      "id": 10000,
+      "name": "JavaScript从入门到精通",
+      "price": 9990,
+      "owner_id": 10000
+    },
+    {
+      "id": 10001,
+      "name": "Java从入门到放弃",
+      "price": 1990,
+      "owner_id": 10001
+    }
+  ]
+}
