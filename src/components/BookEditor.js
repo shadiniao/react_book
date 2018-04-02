@@ -4,6 +4,7 @@ import FormItem from '../components/FormItem';
 import formProvider from '../utils/formProvider';
 import HomeLayout from '../layouts/HomeLayout';
 import PropTypes from 'prop-types';
+import request, {get} from '../utils/request';
 
 class BookEditor extends Component {
     constructor() {
@@ -26,18 +27,16 @@ class BookEditor extends Component {
     }
 
     getRecommendUsers(partialUserId) {
-        fetch('http://localhost:3000/user?id_like=' + partialUserId)
-            .then(res => res.json())
-            .then(res => {
-                if (res.length === 1 && res[0].id === partialUserId) {
-                    return;
-                }
-                this.setState({
-                    recommendUsers: res.map(user => {
-                        return {text: `${user.id} ${user.name}`, value: user.id}
-                    })
+        get('http://localhost:3000/user?id_like=' + partialUserId)(this.props.history).then(res => {
+            if (res.length === 1 && res[0].id === partialUserId) {
+                return;
+            }
+            this.setState({
+                recommendUsers: res.map(user => {
+                    return {text: `${user.id} ${user.name}`, value: user.id}
                 })
             })
+        })
     }
 
     handleOwnerIdChange(value) {
@@ -85,13 +84,11 @@ class BookEditor extends Component {
             method = 'put';
         }
 
-        fetch(apiUrl, {
-            method,
-            body: JSON.stringify({name: name.value, price: price.value, owner_id: owner_id.value}),
-            headers: {
-                'content-type': 'application/json'
-            }
-        }).then((res) => res.json()).then((res) => {
+        request(apiUrl, method, {
+            name: name.value,
+            price: price.value,
+            owner_id: owner_id.value
+        })(this.props.history).then((res) => {
             if (res.id) {
                 this
                     .props

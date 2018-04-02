@@ -1,145 +1,145 @@
 import React, {Component} from 'react';
-import FormItem from '../components/FormItem';
-import formProvider from '../utils/formProvider';
-import HomeLayout from '../layouts/HomeLayout';
-import PropTypes from 'prop-types';
+import request from '../utils/request';
+import {
+    Form,
+    Input,
+    InputNumber,
+    Select,
+    Button,
+    message
+} from 'antd';
+
+const FormItem = Form.Item;
+
+const formItemLayout = {
+    labelCol: {
+        xs: {
+            span: 24
+        },
+        sm: {
+            span: 8
+        }
+    },
+    wrapperCol: {
+        xs: {
+            span: 24
+        },
+        sm: {
+            span: 16
+        }
+    }
+};
+
+const tailFormItemLayout = {
+    wrapperCol: {
+        xs: {
+            span: 24,
+            offset: 0
+        },
+        sm: {
+            span: 16,
+            offset: 8
+        }
+    }
+};
 
 class UserEditor extends Component {
-    static contextTypes = {
-        router: PropTypes.object
-    }
 
     componentWillMount() {
-        const {editTarget, setFormValues} = this.props;
+        const {editTarget, form} = this.props;
         if (editTarget) {
-            setFormValues(editTarget);
+            form.setFormValues(editTarget);
         }
     }
 
     handleSubmit(e) {
         e.preventDefault();
-        const {
-            form: {
-                name,
-                age,
-                gender
-            },
-            formValid,
-            editTarget
-        } = this.props;
+        const {editTarget, form} = this.props;
 
-        if (!formValid) {
-            alert('请填写正确的信息后重试');
-            return;
-        }
-
-        let editType = 'add';
-        let apiUrl = 'http://localhost:3000/user';
-        let method = 'post';
-
-        if (editTarget) {
-            editType = 'update';
-            apiUrl += `/${editTarget.id}`;
-            method = 'put';
-        }
-
-        fetch(apiUrl, {
-            method,
-            body: JSON.stringify({name: name.value, age: age.value, gender: gender.value}),
-            headers: {
-                'content-type': 'application/json'
-            }
-        }).then((res) => res.json()).then((res) => {
-            if (res.id) {
-                // this.setState({name: '', age: 0, gender: ''});
-                this.props.history.push('/user/list');
+        form.validateFields((err, values) => {
+            if (err) {
+                message.warn(err);
                 return;
-            } else {
-                alert('failed');
             }
-        }).catch((err) => console.log(err));
+
+            let editType = 'add';
+            let apiUrl = 'http://localhost:3000/user';
+            let method = 'post';
+
+            if (editTarget) {
+                editType = 'update';
+                apiUrl += `/${editTarget.id}`;
+                method = 'put';
+            }
+
+            request(apiUrl, method, form)(this.props.history).then((res) => {
+                if (res.id) {
+                    // this.setState({name: '', age: 0, gender: ''});
+                    this
+                        .props
+                        .history
+                        .push('/user/list');
+                    return;
+                } else {
+                    alert('failed');
+                }
+            }).catch((err) => console.log(err));
+        });
     }
 
     render() {
-        const {
-            form: {
-                name,
-                age,
-                gender
-            },
-            onFormChange
-        } = this.props;
+        const {form} = this.props;
+        const {getFieldDecorator} = form;
         return (
 
             <form onSubmit={(e) => this.handleSubmit(e)}>
-                <FormItem label="name" valid={name.valid} error={name.error}>
-                    <input
-                        type="text"
-                        name="name"
-                        value={name.value}
-                        onChange={(e) => onFormChange('name', e.target.value)}/>
+                <FormItem label="name" {...formItemLayout}>
+                    {getFieldDecorator('name', {
+                        rules: [
+                            {
+                                required: true,
+                                message: 'Please input name!'
+                            }
+                        ]
+                    })(<input type="text"/>)}
                 </FormItem>
-                <br/>
-                <FormItem label="age" valid={age.valid} error={age.error}>
-                    <input
-                        type="number"
-                        name="age"
-                        value={age.value}
-                        onChange={(e) => onFormChange('age', e.target.value, 'number')}/>
+
+                <FormItem label="age" {...formItemLayout}>
+                    {getFieldDecorator('age', {
+                        rules: [
+                            {
+                                required: true,
+                                message: 'Please input age!'
+                            }
+                        ]
+                    })(<input type="text"/>)}
                 </FormItem>
-                <br/>
-                <FormItem label="gender" valid={gender.valid} error={gender.error}>
-                    <select
-                        name="gender"
-                        id="gender"
-                        value={gender.value}
-                        onChange={(e) => onFormChange('gender', e.target.value)}>
-                        <option value=""></option>
-                        <option value="male">male</option>
-                        <option value="female">female</option>
-                    </select>
+
+                <FormItem label="gender" {...formItemLayout}>
+                    {getFieldDecorator('gender', {
+                        rules: [
+                            {
+                                required: true,
+                                message: '请选择性别'
+                            }
+                        ]
+                    })(
+                        <Select placeholder="请选择">
+                            <Select.Option value="male">男</Select.Option>
+                            <Select.Option value="female">女</Select.Option>
+                        </Select>
+                    )}
                 </FormItem>
-                <br/>
-                <input type="submit" value="submit"/>
+                <FormItem>
+                    <Button type="primary" htmlType="submit" {...tailFormItemLayout}>
+                        submit
+                    </Button>
+                </FormItem>
             </form>
         );
     }
 }
 
-UserEditor = formProvider({
-    name: {
-        defaultValue: '',
-        rules: [
-            {
-                pattern: value => {
-                    return value.length > 0;
-                },
-                error: '请输入用户名'
-            }
-        ]
-    },
-    age: {
-        defaultValue: 0,
-        rules: [
-            {
-                pattern: value => {
-                    return value > 0 && value < 200;
-                },
-                error: '请输入1~200的年龄'
-            }
-        ]
-    },
-    gender: {
-        defaultValue: '',
-        rules: [
-            {
-                pattern: value => {
-                    return !!value;
-                },
-                error: '请选择性别'
-            }
-        ]
-    }
-})(UserEditor);
+UserEditor = Form.create()(UserEditor);
 
 export default UserEditor;
