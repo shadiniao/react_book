@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import HomeLayout from "../layouts/HomeLayout";
+import {message, Table, Button, Popconfirm} from 'antd';
 import {get, del} from '../utils/request';
 
 class BookList extends Component {
@@ -36,44 +36,40 @@ class BookList extends Component {
                 });
             }).catch(error => {
                 console.log(error);
-                alert('delete error');
+                message.error('delete error');
             })
         }
     }
 
     render() {
         const {bookList} = this.state;
-        return (
-            <table>
-                <thead>
-                    <tr>
-                        <th>id</th>
-                        <th>book name</th>
-                        <th>price</th>
-                        <th>owner_id</th>
-                        <th>operat</th>
-                    </tr>
-                </thead>
+        const columns = [
+            {
+                title: 'id',
+                dataIndex: 'id'
+            }, {
+                title: 'book name',
+                dataIndex: 'name'
+            }, {
+                title: 'price',
+                dataIndex: 'price'
+            }, {
+                title: 'owner_id',
+                dataIndex: 'owner_id'
+            }, {
+                title: 'operat',
+                render: (text, record) => (
+                    <Button.Group>
+                        <Button type="primary"  onClick={() => this.handleEdit(record)} icon="edit" />
+                        <Popconfirm title="确定要删除吗？" onConfirm={() => this.handleDel(record)}>
+                            <Button type="primary"  icon="delete"/>
+                        </Popconfirm>
+                    </Button.Group>
+                )
+            }
 
-                <tbody>
-                    {bookList.map(book => {
-                        return (
-                            <tr key={book.id}>
-                                <td>{book.id}</td>
-                                <td>{book.name}</td>
-                                <td>{book.price}</td>
-                                <td>{book.owner_id}</td>
-                                <td>
-                                    <a href="javascript:void(0)" onClick={() => this.handleEdit(book)}>edit</a>&nbsp;
-                                    <a href="javascript:void(0)" onClick={() => this.handleDel(book)}>delete</a>
-                                </td>
-                            </tr>
-                        );
-                    })
-}
-                </tbody>
-            </table>
-        );
+        ]
+        return (<Table columns={columns} dataSource={bookList} rowKey={row => row.id}/>);
     }
 }
 

@@ -17,7 +17,8 @@ const formItemLayout = {
             span: 24
         },
         sm: {
-            span: 8
+            span: 4,
+            offset: 4
         }
     },
     wrapperCol: {
@@ -25,7 +26,7 @@ const formItemLayout = {
             span: 24
         },
         sm: {
-            span: 16
+            span: 6
         }
     }
 };
@@ -37,8 +38,8 @@ const tailFormItemLayout = {
             offset: 0
         },
         sm: {
-            span: 16,
-            offset: 8
+            span: 2,
+            offset: 10
         }
     }
 };
@@ -58,7 +59,7 @@ class UserEditor extends Component {
 
         form.validateFields((err, values) => {
             if (err) {
-                message.warn(err);
+                message.warn('err');
                 return;
             }
 
@@ -72,7 +73,7 @@ class UserEditor extends Component {
                 method = 'put';
             }
 
-            request(apiUrl, method, form)(this.props.history).then((res) => {
+            request(method, apiUrl, form)(this.props.history).then((res) => {
                 if (res.id) {
                     // this.setState({name: '', age: 0, gender: ''});
                     this
@@ -92,7 +93,7 @@ class UserEditor extends Component {
         const {getFieldDecorator} = form;
         return (
 
-            <form onSubmit={(e) => this.handleSubmit(e)}>
+            <Form onSubmit={(e) => this.handleSubmit(e)}>
                 <FormItem label="name" {...formItemLayout}>
                     {getFieldDecorator('name', {
                         rules: [
@@ -101,7 +102,7 @@ class UserEditor extends Component {
                                 message: 'Please input name!'
                             }
                         ]
-                    })(<input type="text"/>)}
+                    })(<Input type="text"/>)}
                 </FormItem>
 
                 <FormItem label="age" {...formItemLayout}>
@@ -112,7 +113,7 @@ class UserEditor extends Component {
                                 message: 'Please input age!'
                             }
                         ]
-                    })(<input type="text"/>)}
+                    })(<Input type="text"/>)}
                 </FormItem>
 
                 <FormItem label="gender" {...formItemLayout}>
@@ -130,12 +131,12 @@ class UserEditor extends Component {
                         </Select>
                     )}
                 </FormItem>
-                <FormItem>
-                    <Button type="primary" htmlType="submit" {...tailFormItemLayout}>
+                <FormItem {...tailFormItemLayout}>
+                    <Button type="primary" htmlType="submit">
                         submit
                     </Button>
                 </FormItem>
-            </form>
+            </Form>
         );
     }
 }

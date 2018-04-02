@@ -1,11 +1,13 @@
 import React, {Component} from 'react';
 import style from '../styles/auto-complete.less';
+import {Input} from 'antd';
 
 export default class AutoComplete extends Component {
     constructor(props) {
         super(props);
 
         this.state = {
+            show: false,
             displayValue: '',
             activeItemIndex: -1
         }
@@ -21,7 +23,7 @@ export default class AutoComplete extends Component {
         this.setState({activeItemIndex: -1, displayValue: ''})
         this
             .props
-            .onValueChange(value);
+            .onChange(value);
     }
 
     handleKeyDown(e) {
@@ -40,9 +42,10 @@ export default class AutoComplete extends Component {
             case 40:
                 {
                     e.preventDefault;
-                    this.moveItem(e.keyCode === '38'
+                    const direction = e.keyCode === 38
                         ? 'up'
-                        : 'down');
+                        : 'down';
+                    this.moveItem(direction);
                     break;
                 }
 
@@ -58,7 +61,7 @@ export default class AutoComplete extends Component {
         let newIndex = -1;
 
         if (direction === 'up') {
-            if (activeItemIndex === -1) {
+            if (activeItemIndex === 0) {
                 newIndex = options.length - 1;
             } else {
                 newIndex = activeItemIndex - 1;
@@ -73,7 +76,7 @@ export default class AutoComplete extends Component {
 
         let displayValue = '';
         if (newIndex > -1) {
-            displayValue = options[newIndex];
+            displayValue = options[newIndex].value;
         }
 
         this.setState({activeItemIndex: newIndex, displayValue});
@@ -96,16 +99,18 @@ export default class AutoComplete extends Component {
     }
 
     render() {
-        const {displayValue, activeItemIndex} = this.state;
+        const {show, displayValue, activeItemIndex} = this.state;
         const {value, options} = this.props;
 
         return (
             <div className={style.wrapper}>
-                <input
+                <Input
                     type="text"
-                    value={value}
+                    value={displayValue || value}
                     onChange={e => this.handleChange(e.target.value)}
-                    onKeyDown={this.handleKeyDown}/> {options.length > 0 && (
+                    onKeyDown={this.handleKeyDown}
+                    onFocus={() => this.setState({show: true})}
+                    onBlur={() => this.setState({show: false})}/> {show && options.length > 0 && (
                     <ul
                         className={style.options}
                         onMouseLeave={this

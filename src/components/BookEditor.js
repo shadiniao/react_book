@@ -1,10 +1,48 @@
 import React, {Component} from 'react';
 import AutoComplete from './AutoComplete';
-import FormItem from '../components/FormItem';
-import formProvider from '../utils/formProvider';
-import HomeLayout from '../layouts/HomeLayout';
-import PropTypes from 'prop-types';
 import request, {get} from '../utils/request';
+import {
+    Form,
+    Input,
+    InputNumber,
+    Select,
+    Button,
+    message
+} from 'antd';
+
+const FormItem = Form.Item;
+
+const formItemLayout = {
+    labelCol: {
+        xs: {
+            span: 24
+        },
+        sm: {
+            span: 4
+        }
+    },
+    wrapperCol: {
+        xs: {
+            span: 24
+        },
+        sm: {
+            span: 16
+        }
+    }
+};
+
+const tailFormItemLayout = {
+    wrapperCol: {
+        xs: {
+            span: 24,
+            offset: 0
+        },
+        sm: {
+            span: 2,
+            offset: 10
+        }
+    }
+};
 
 class BookEditor extends Component {
     constructor() {
@@ -16,14 +54,6 @@ class BookEditor extends Component {
         this.handleOwnerIdChange = this
             .handleOwnerIdChange
             .bind(this);
-    }
-
-    componentWillMount() {
-        const {editTarget, setFormValues} = this.props;
-        if (editTarget) {
-            setFormValues(editTarget);
-        }
-
     }
 
     getRecommendUsers(partialUserId) {
@@ -40,9 +70,6 @@ class BookEditor extends Component {
     }
 
     handleOwnerIdChange(value) {
-        this
-            .props
-            .onFormChange('owner_id', value);
         this.setState({recommendUsers: []});
 
         if (this.timer) {
@@ -59,117 +86,105 @@ class BookEditor extends Component {
 
     handleSubmit(e) {
         e.preventDefault();
-        const {
-            form: {
-                name,
-                price,
-                owner_id
-            },
-            formValid,
-            editTarget
-        } = this.props;
+        const {form, editTarget} = this.props;
 
-        if (!formValid) {
-            alert('请填写正确的信息后重试');
-            return;
-        }
+        form.validateFields((err, values) => {
 
-        let editType = 'add';
-        let apiUrl = 'http://localhost:3000/book';
-        let method = 'post';
-
-        if (editTarget) {
-            editType = 'update';
-            apiUrl += `/${editTarget.id}`;
-            method = 'put';
-        }
-
-        request(apiUrl, method, {
-            name: name.value,
-            price: price.value,
-            owner_id: owner_id.value
-        })(this.props.history).then((res) => {
-            if (res.id) {
-                this
-                    .props
-                    .history
-                    .push('/book/list');
+            if (err) {
+                message.warn('err');
                 return;
-            } else {
-                alert('failed');
             }
-        }).catch((err) => console.log(err));
+
+            let editType = 'add';
+            let apiUrl = 'http://localhost:3000/book';
+            let method = 'post';
+
+            if (editTarget) {
+                editType = 'update';
+                apiUrl += `/${editTarget.id}`;
+                method = 'put';
+            }
+
+            request(method, apiUrl, values)(this.props.history).then((res) => {
+                if (res.id) {
+                    this
+                        .props
+                        .history
+                        .push('/book/list');
+                    return;
+                } else {
+                    alert('failed');
+                }
+            }).catch((err) => console.log(err));
+        });
     }
     render() {
+        const {recommendUsers} = this.state;
         const {
-            form: {
-                name,
-                price,
-                owner_id
-            },
-            onFormChange
+            form,
+            editTarget = {}
         } = this.props;
+        const {getFieldDecorator} = form;
         return (
-            <form onSubmit={this.handleSubmit}>
-                <FormItem label="书名" valid={name.valid} error={name.error}>
-                    <input
-                        type="text"
-                        name="name"
-                        value={name.value}
-                        onChange={(e) => onFormChange('name', e.target.value)}/>
+            <Form
+                onSubmit={this.handleSubmit}
+                style={{
+                width: '400px'
+            }}>
+                <FormItem label="书名" {...formItemLayout}>
+                    {getFieldDecorator('name', {
+                        rules: [
+                            {
+                                required: true,
+                                message: '请输入书名'
+                            }
+                        ],
+                        initialValue: editTarget.name
+                    },)(<Input type="text"/>)}
                 </FormItem>
-                <FormItem label="价格" valid={name.valid} error={name.error}>
-                    <input
-                        type="text"
-                        name="price"
-                        value={price.value}
-                        onChange={(e) => onFormChange('price', e.target.value)}/>
+                <FormItem label="价格" {...formItemLayout}>
+                    {getFieldDecorator('price', {
+                        rules: [
+                            {
+                                required: true,
+                                message: '请输入价格'
+                            }, {
+                                min: 1,
+                                max: 999,
+                                type: 'number',
+                                message: 'please input 1~999 number'
+                            }
+                        ],
+                        initialValue: editTarget.price
+                    })(<InputNumber/>)}
                 </FormItem>
-                <FormItem label="所有者" valid={owner_id.valid} error={owner_id.error}>
-                    <AutoComplete
-                        value={owner_id.value}
+                <FormItem label="所有者" {...formItemLayout}>
+                    {getFieldDecorator('owner_id', {
+                        rules: [
+                            {
+                                required: true,
+                                message: '请输入所有者'
+                            }
+                        ],
+                        initialValue: editTarget.owner_id
+                    })(<AutoComplete
                         options={this.state.recommendUsers}
-                        onValueChange={value => this.handleOwnerIdChange(value)}/>
+                        onChange={this.handleOwnerIdChange}/>)}
+
                 </FormItem>
-            </form>
+
+                <FormItem
+                    wrapperCol={{
+                    span: 12,
+                    offset: 6
+                }}>
+                    <Button type="primary" htmlType="submit">Submit</Button>
+                </FormItem>
+            </Form>
         );
     }
 }
 
-BookEditor = formProvider({
-    name: {
-        defaultValue: '',
-        rules: [
-            {
-                pattern: value => {
-                    return value.length > 0;
-                },
-                error: '请输入用户名'
-            }
-        ]
-    },
-    price: {
-        defaultValue: 0,
-        rules: [
-            {
-                pattern: value => {
-                    return value > 0 && value < 200;
-                },
-                error: '请输入1~200的价格'
-            }
-        ]
-    },
-    owner_id: {
-        defaultValue: '',
-        rules: [
-            {
-                pattern: value => {
-                    return !!value;
-                },
-                error: '请选择拥有人'
-            }
-        ]
-    }
-})(BookEditor);
+BookEditor = Form.create()(BookEditor);
 
 export default BookEditor;
